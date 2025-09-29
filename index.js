@@ -1,58 +1,80 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
 
 let diddy_img = new Image();
-diddy_img.src = './assets/diddy.png';
+diddy_img.src = './assets/diddy22.png';
 
-let DIDDY = {x: 0,y: 0, width: 200, height: 200,};
+let DIDDY = {x: 500,y: 500, width: 256, height: 256};
 
-let speed = 20;
+let speed = 15;
 let side = "none";
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+let angleInDegrees = 0;
+
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "red";
 
-    ctx.fillRect(DIDDY.x, DIDDY.y, DIDDY.width, DIDDY.height);
+    ctx.drawImage(diddy_img,DIDDY.x, DIDDY.y, DIDDY.width, DIDDY.height);
 
 
     requestAnimationFrame(gameLoop);
 }
 
-function isCollision(rect1, rect2) {
-        if (
-            rect1.x < rect2.x + rect2.width &&
-            rect1.x + rect1.width > rect2.x &&
-            rect1.y < rect2.y + rect2.height &&
-            rect1.y + rect1.height > rect2.y
-        ) {
-            // Collision detected!
-            return true;
-        } else {
-            // No collision
-            return false;
-        }
-}
 function getMousePositionX(canvas, event) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left;
-    //console.log("Coordinate x: "+ x)
     return x;
 }
 function getMousePositionY(canvas, event) {
     let rect = canvas.getBoundingClientRect();
     let y = event.clientY - rect.top;
-    //console.log("Coordinate y: "+ y)
     return y;
 }
-window.addEventListener("click", function(e) {
+
+function getDegrees(radiant){
+    return radiant / (Math.PI * 2) * 360;
+}
+
+window.addEventListener("mousemove", function(e) {
     let X = getMousePositionX(canvas, e);
     let Y = getMousePositionY(canvas, e);
+
     if (X > DIDDY.x && X < DIDDY.x + DIDDY.width && Y > DIDDY.y && Y < DIDDY.y + DIDDY.height) {
         if(Y < DIDDY.y + DIDDY.height / 2) {
             side = "up";
 
+            let targetY = (DIDDY.y + DIDDY.height /2) - Y ;
+            targetY -= targetY * 2;
+
+            let targetX = (DIDDY.x + DIDDY.width / 2) - X ;
+
+            let angleInRadians = Math.atan2(targetY, targetX);
+            angleInDegrees = getDegrees(angleInRadians);
+            console.log("angle in degrees:", angleInDegrees, "°");
+
+            let vx = Math.cos((2* Math.PI) - angleInRadians) * speed;
+            let vy = Math.sin((2* Math.PI) - angleInRadians) * speed;
+
+            DIDDY.x += vx;
+            DIDDY.y += vy;
+
+
         }else {
             side = "down";
+            let targetY = Y - (DIDDY.y + DIDDY.height /2) ;
+            let targetX = X - (DIDDY.x + DIDDY.width / 2);
+            let angleInRadians = Math.atan2(targetY, targetX);
+
+            let vx = Math.cos(angleInRadians) * speed;
+            let vy = Math.sin(angleInRadians) * speed;
+
+            DIDDY.x -= vx;
+            DIDDY.y -= vy;
         }
         console.log(side);
     }
